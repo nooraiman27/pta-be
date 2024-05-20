@@ -2,6 +2,12 @@
 
 @section('content')
 <div class="container">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('student.index') }}">Student</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ isset($student) ? 'Update' : 'Add New' }}</li>
+        </ol>
+    </nav>
     <h2>{{ isset($student) ? 'Update' : 'Add New' }}</h2>
     @if ($errors->any())
         <div class="alert alert-danger">
