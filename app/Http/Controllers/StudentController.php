@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class StudentController extends Controller
 {
@@ -76,4 +77,41 @@ class StudentController extends Controller
             ->route('student.index')
             ->with('success', 'Record deleted successfully');
     }
+
+    public function datatable()
+    {
+        $data = Student::latest()->get();
+        return Datatables::of($data)
+            ->addIndexColumn()
+            ->addColumn('checkbox', function($student) {
+                $rowCheckbox = '<input type="checkbox" name="select-row[]" class="select-row" value="'.$student->id.'">';
+                return $rowCheckbox;
+            })
+            ->addColumn('action', function($student) {
+                $editRoute = route('student.edit', $student->id);
+                $deleteRoute = route('student.destroy', $student->id);
+
+                $actionBtn = '
+                    <a href=" '.$editRoute.' " class="btn btn-warning">Update</a>
+                    <form action=" '.$deleteRoute.' " method="POST" style="display:inline;">
+                        '. csrf_field() .'
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>';
+                return $actionBtn;
+            })
+            ->rawColumns(['action', 'checkbox'])
+            ->make(true);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('select-row');
+        if ($ids) {
+            Student::whereIn('id', $ids)->delete();
+            return redirect()->back()->with('success', 'Selected records have been deleted.');
+        }
+        return redirect()->back()->with('error', 'No record selected for deletion.');
+    }
+
 }
